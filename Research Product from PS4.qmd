@@ -1,0 +1,281 @@
+---
+title: "Corruption and Economic Issues Dominate the Top National Concerns in Russia"
+author: "Michelle Tinker"
+institute: "American University"
+date: today
+format: 
+  pdf:
+    include-in-header:
+      text: |
+        \usepackage{float}
+        \floatplacement{figure}{H}
+        \floatplacement{table}{H}
+        \usepackage{indentfirst}
+        \setlength{\parindent}{2em}
+knitr:
+  opts_chunk:
+    echo: false
+    eval: true
+    prompt: false
+    tidy: false
+    comment: NA
+    message: false
+    warning: false
+    fig.align: 'center'
+    fig-width: 6
+    out-width: "85%"
+    fig-asp: 0.618
+---
+
+\newpage 
+
+```{r}
+#| label: setup 
+
+library(tidyverse)
+library(haven)
+library(kableExtra)
+
+data <- read_sav("gbs4.v5.sav")
+
+```
+
+
+```{r}
+#| label: Cleaning-data 
+
+data_Russia <- 
+  data |>
+  filter(region == 5 & country == 506)
+
+```
+
+# Summary 
+\indent An analysis of public sentiment in Russia reveals that corruption and economic issues dominate the top national concerns in the Russian Federation, according to data from the Global Barometer Surveys. This public opinion survey includes `r nrow(data_Russia)` observations from Russian citizens in 2021. The plurality of Russians surveyed responded that corruption was the largest issue facing Russia, with the majority of Russians believe all or most Russian politicians are corrupt at both the local and the national level. An additional 36 percent of respondents said that one of four economic issues were the largest problem facing Russia. Although the majority of Russians believe that the state of the economy is neutral or better, 37 percent think the economy is in bad or very bad condition. Additionally, the vast majority of Russians believe that the income distribution in Russia is either unfair or very unfair, suggesting that perceived inequality could be a driver for economic dissatisfaction. 
+
+# Motivation 
+\indent Public opinion in Russia is of high interest following the Russian Government's invasion of Ukraine in 2022. Since the start of the war, academics and global policymakers have worked to evaluate the stability of the Russian Government and potential second-order effects of various geopolitical decisions. The Global Barometer Surveys' data gives us unique insight into many aspects of Russian opinion, including information on the key issues besetting Russian society. Although the data set is a bit dated, it can still help provide insight into the public opinion of Russia before the war kicked off. This is helpful as a baseline, both for understanding broad trend lines of Russian opinion and as a possible comparison to public opinion data that is collected after the invasion. 
+
+# Data and Measurement 
+\indent This paper utilizes public opinion data from the Global Barometer Surveys (GBS), a research project consisting of five regional barometers. The goal of the GBS is to measure, at a mass level, the current social, political, and economic climate around the world and provides an independent, non-partisan, scientific and multidisciplinary view of public opinion on a range of policy-relevant issues. This report utilizes a specific subset of the GBS - public surveys from the Eurasian Barometer Survey, which covers Eastern Europe, the Balkans, the Russian Federation, the Caucasus, and Central Asia. From this data set, the analysis focuses exclusively on surveys from the Russian Federation, comprising of `r nrow(data_Russia)` observations collected in 2021. This report looks at five questions in the survey: (1) What are the most important problems facing Russia that the government should address? (2) How widespread do you think corruption and bribe-taking are in your local/municipal government? (3) How widespread do you think corruption and bribe-taking are in the national government? (4) How would you rate the overall economic condition of Russia today? and (5) How fair do you think income distribution is in Russia? All of these questions are public survey questions that have been answered on an ordinal scale with options to opt out (such as "Can't choose/don't know" and "Decline to answer"). 
+
+# Corruption and Economic Concerns Dominate National Sentiment
+
+\indent Almost half of all Russian surveyed believe that corruption and economic issues are the top problems facing Russia. The Eurasian Barometer Survey directly asked survey participants what they thought the most important problems facing Russia were that the government should address. Survey participants had 46 options to chose from, ranging from issues with the economy, education, health services, crime, political issues, corruption, and more. As @tbl-problems below shows, about 13 percent of all participants responded that corruption was the largest issue facing Russia. 36 percent of respondents answered that an economic issue was the largest problem, including management of the economy, unemployment, poverty, and wages and income. The sixth most common response was political instability, political divisions, and ethnic tensions, with 7.3 percent of respondents. Health was the next largest share at 5.7 percent.   
+
+```{r}
+#| label: tbl-problems
+#| tbl-cap: "\\textbf{What are the most important problems facing Russia that the government should address?}"
+
+problems <- 
+  data_Russia |>
+  mutate(imp1 = case_match(imp1,
+                           60024 ~ "Corruption",
+                           60001 ~ "Management of the Economy",
+                           60003 ~ "Unemployment", 
+                           60004 ~ "Poverty/destitution",
+                           60002 ~ "Wages, income and salaries", 
+                           60026 ~ "Political instability/political divisions/ethnic tensions",
+                           60019 ~ "Health", 
+                           60110 ~ "Other",
+                           .default = as.character(imp1) 
+  )) |>
+  count(imp1, sort = TRUE) |>
+  mutate(percent = round(n/ sum(n)*100, 1)) |>
+  head(9) |>
+  filter(imp1 != 8) |>
+  select(-n) 
+
+kable(problems, 
+      format = "latex", 
+      booktabs = TRUE, 
+      escape = TRUE, 
+      col.names = c("Problem", "Percent of Responses"), 
+      align = "c") |>
+  kable_styling(latex_options = "HOLD_position")
+
+```
+
+
+## Widespread Corruption the Foremost Driver of Public Discontent 
+
+\indent The plurality of Russian survey respondents of the Eurasian Barometer Survey found corruption to be the largest problem that the government should address. This study examined public perceptions of how widespread corruption and bribe-taking are within both local/municipal and national governments. @fig-corruption below shows that almost half of Russians believe all or most politicians are corrupt at both the local and the national level. The Russians surveyed believe there is more corruption at the local level than the national level, although the difference between the number of respondents who said "all of them" or "most of them" is only about 12 percent.      
+
+```{r}
+#| label: fig-corruption
+#| fig-cap: "Perceptions of Local and National Corruption Levels"
+#| fig-pos: 'H'
+
+# How widespread is corruption at local level?
+local_cor <- 
+  data_Russia |>
+  mutate(cup2 = as_factor(cup2)) |>
+  count(cup2, sort = TRUE) |>
+  mutate(percent = round(n/ sum(n)*100, 1)) |>
+  filter(cup2 != "Can't choose/don't know" & cup2 != "Decline to answer/no answer") |>
+  select(-n) 
+
+# How widespread is corruption at national level?
+national_cor <- 
+  data_Russia |>
+  mutate(cup3 = as_factor(cup3)) |>
+  count(cup3, sort = TRUE) |>
+  mutate(percent = round(n/ sum(n)*100, 1)) |>
+  filter( cup3 != "Can't choose/don't know" & cup3 != "Decline to answer/no answer") |>
+  select(-n) 
+
+# Combine the two data sets 
+local_long <- 
+  local_cor |>
+  rename(Category = cup2) |>
+  mutate(Level = "Local")
+
+national_long <- 
+  national_cor |>
+  rename(Category = cup3) |>
+  mutate(Level = "National")
+
+combined_data <- bind_rows(local_long, national_long)
+
+combined_data$Category <- factor(combined_data$Category, 
+                                levels = c("None", "Some of them", "Most of them", "All of them"))
+
+combined_data_filter <- 
+  combined_data |>
+    filter(Category %in% c("All of them", "Most of them"))
+
+ggplot(combined_data_filter, aes(x = Level, y = percent, fill = Category)) +
+  geom_col() +
+  scale_fill_viridis_d() +
+  labs(
+    title = "How Widespread is Corruption in the Russian Government?",
+    x = "Level of Government",
+    y = "Percentage",
+    fill = "Response"
+  ) +
+  theme_minimal() + 
+  theme(plot.title = element_text(face = "bold"))
+
+```
+
+\indent While corruption is the leading concern nationally, it is not felt equally across the population. When broken down by age cohort, there is a distinction of corruption perceptions by those who are in a younger cohort and those in an older cohort compared to those in the middle, between the ages of 26 to 60. Young Russians, ages 15 through 25, responded about 42 percent of the time that all or most politicians at the local or national level are corrupt. By comparison, 50 percent of Russians ages 26 through 40 believe all or most local and national politicians are corrupt. Older Russians, ages above 61, are the least likely to believe all or most politicians are corrupt at only 35 percent. 
+
+```{r}
+#| label: fig-corruption-by-age
+#| fig-cap: "Perceptions of High Corruption Levels By Age"
+#| fig-pos: 'H'
+
+age_normalized <- 
+  data_Russia |>
+  mutate(
+    cup2 = as_factor(cup2),
+    cup3 = as_factor(cup3),
+    age_group = factor(gbse2b, 
+                       levels = c(1, 2, 3, 4), 
+                       labels = c("Ages 15-25", "Ages 26-40", "Ages 41-60", "Ages 61+"))
+  ) |>
+  filter(!is.na(age_group)) |>
+  group_by(age_group) |>
+  summarise(
+    total_in_cohort = n(),
+    high_corruption = sum(cup2 %in% c("All of them", "Most of them") & 
+                          cup3 %in% c("All of them", "Most of them"), na.rm = TRUE)
+  ) |>
+  mutate(percent = round(high_corruption / total_in_cohort * 100, 1))
+
+ggplot(age_normalized, aes(x = age_group, y = percent, fill = age_group)) +
+  geom_col() +
+  scale_fill_viridis_d() +
+  labs(
+    title = "Perceptions of High Corruption by Age Cohort",
+    x = "Age Cohort",
+    y = "Percentage",
+    fill = "Age Cohort"
+  ) +
+  theme_minimal() +
+  theme(plot.title = element_text(face = "bold"),
+        legend.position = "none")
+
+```
+
+## Economic Hardship Dominates Public Outlook
+
+\indent More than a quarter of the Russians surveyed in the GBS answered that economic issues were the largest problems facing Russia. This study looked at two additional survey questions to examine why this was the case. The first metric evaluated public perceptions of the current state of the economy. Notably, the majority of Russians surveyed answered that the economy was "so so" or otherwise neither good nor bad. 37 percent of Russians surveyed answered that the economy was bad or very bad, suggesting a significant portion of the population is burdened by economic issues. 
+
+```{r}
+#| label: fig-econ-conditions
+#| fig-cap: "Perceptions of the Economic Conditions in Russia"
+#| fig-pos: 'H'
+
+#How would you rate the overall economic condition of Russia today 
+econ_health <- data_Russia |>
+  mutate(ee1 = as_factor(ee1)) |>
+  count(ee1, sort = TRUE) |>
+  mutate(percent = round(n/ sum(n)*100, 1)) |>
+  filter(ee1 != "Can't choose/don't know") |>
+  select(-n) 
+
+
+econ_health |>
+  ggplot(aes(x=ee1, y = percent, fill = ee1)) +
+  geom_col()+
+  scale_fill_viridis_d() +
+  theme_minimal() +
+    labs(
+    title = "How Would You Rate the Economic Condition of Russia?",
+    x = NULL, 
+    y = "Percentage",
+    fill = "Response"
+  ) +
+  theme(
+    axis.text.x = element_blank(), 
+    plot.title = element_text(face = "bold")
+  ) 
+
+```
+
+
+\indent Given that most respondents characterized the economy as neutral or favorable, this study sought to identify other factors that are contributing to economic dissatisfaction. An analysis of the question "how fair do you think income distribution is in Russia?" revealed a possible explanation. The vast majority, or 75 percent, of Russians believe that the income distribution in Russia is either unfair or very unfair. Only 1.9 percent of Russians believe is it very fair. This suggests that perceived inequality could be a driver for the economic dissatisfaction. 
+
+```{r}
+#| label: fig-income-dist
+#| fig-cap: "Perceptions of the Income Distribution in Russia"
+#| fig-pos: 'H'
+
+#Fairness of income distribution? 
+# unfair 
+income_dist <- 
+  data_Russia |>
+  mutate(rd1 = as_factor(rd1)) |>
+  count(rd1) |>
+  mutate(percent = round(n/ sum(n)*100, 1)) |>
+  filter(rd1 != "Can't choose/don't know" & rd1 != "Decline to answer/no answer" & rd1 != "Do not understand the question") |>
+  select(-n) 
+
+income_dist |>
+  ggplot(aes(x=rd1, y = percent, fill = rd1)) +
+  geom_col()+
+  scale_fill_viridis_d() +
+  theme_minimal() +
+    labs(
+    title = "How Fair Do You Think Income Distribution is in Russia?",
+    x = NULL,
+    y = "Percentage",
+    fill = "Response"
+  ) +
+  theme(
+    plot.title = element_text(face = "bold"), 
+    axis.text.x = element_blank()
+  ) 
+
+
+```
+
+
+# Conclusion 
+\indent The plurality of Russians in the GBS survey believe that corruption is the largest issue facing Russia. An additional 36 percent of respondents believe that one of four economic issues are the largest issue, including management of the economy, unemployment, poverty, and wages and income. Diving deeper into these issues reveals that the majority of Russian believe all or most politicians are corrupt at both the local and national level, and that working age Russians are most likely to believe there are high levels of corruption, compared to both younger and older Russians. Although the majority of Russians believe the state of the economy is neutral or better, a significant portion think that the economy is in bad or very bad condition. Additionally, the vast majority, 75 percent, of Russians believe that the income distribution in Russia is either unfair or very unfair, suggesting that perceived inequality could be a driver for economic dissatisfaction. 
+
+\indent When evaluating Russian stability or the Russian people's satisfaction with the Russian Government, it's important to consider the factors that Russians themselves feel are most important. It is unlikely that the Russian war in Ukraine has significantly changed the amount of corruption in local or federal governments, but there are some indications that inequality is decreasing in Russian society, especially for the families of soldiers fighting in the war. Further research would need to be completed to see if public opinion on these topics has changed in the past five years, but this report indicates that it's possible that if inequality is in fact decreasing in Russia, it could affect how Russians feel about the largest problems facing Russia and the Russian Government. 
+
+# Bibliography  
+ Global Barometer Survey, Wave 4 (2016-2022) Pooled Datafile, https://www.globalbarometer.net/. Taipei: Hu Fu Center for East Asia Democratic Studies, NTU [distributor], 2025.
