@@ -2,6 +2,7 @@
 Below is a custom R function that I created for project that required creating 20 graphs from OECD's TiVA (Trade in Value Added) data set. Rather than spend the time formatting each graph individually, I used this R function to make the process more efficient. Below is the code for the custom function as well as an example of the code using the TiVA data set. 
 
 ## Exemplar Function 
+```{r}
 graph_standard <- function(data, time_var, obs_var, source_var) {
 ggplot(data, aes(x = {{time_var}}, 
                  y = {{obs_var}}, 
@@ -27,8 +28,10 @@ ggplot(data, aes(x = {{time_var}},
       legend.position = "bottom" 
   ) 
 }
+```
 
 ## Code for Example of TiVA Graph 
+```{r}
 my_colors <- c( 
   `IRL` = '#FFDAB9', 
   `CHE` = '#7D26CD',  
@@ -81,6 +84,7 @@ us_fdemand_per <-
 
 graph_standard(us_fdemand_per, TIME_PERIOD, percent_OBS, VALUE_ADDED_SOURCE_AREA) + 
   labs(title = "Top Six Share of Value Added in US Final Demand")
+```
 
 ## Example Graph 
 
