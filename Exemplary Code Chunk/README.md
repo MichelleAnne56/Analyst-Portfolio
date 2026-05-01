@@ -1,7 +1,7 @@
 # Exemplary Function Code
-Below is a custom R function that I used in a project that required creating 20 graphs from OECD's TiVA (Trade in Value Added) data set. Rather than spend the time formatting each graph individually, I used this R function to make the process more efficient. Below is the code for the custom function as well as an example of the code using the TiVA data set. 
+Below is a custom R function that I created for project that required creating 20 graphs from OECD's TiVA (Trade in Value Added) data set. Rather than spend the time formatting each graph individually, I used this R function to make the process more efficient. Below is the code for the custom function as well as an example of the code using the TiVA data set. 
 
-## Code for TiVA Project 
+## Exemplar Function 
 graph_standard <- function(data, time_var, obs_var, source_var) {
 ggplot(data, aes(x = {{time_var}}, 
                  y = {{obs_var}}, 
